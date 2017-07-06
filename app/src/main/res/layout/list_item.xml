@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/each_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/repository_icon"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_marginRight="16dp"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="@mipmap/ic_launcher" />
+
+    <TextView
+        android:id="@+id/repository_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/repository_icon"
+        android:layout_toRightOf="@+id/repository_icon"
+        android:text="@string/app_name" />
+
+</RelativeLayout>
