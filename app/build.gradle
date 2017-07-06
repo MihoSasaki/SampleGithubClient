@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 25
@@ -24,7 +25,38 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    def appCompatVersion = '25.3.1'
+    compile "com.android.support:appcompat-v7:$appCompatVersion"
+    compile "com.android.support:recyclerview-v7:$appCompatVersion"
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    def retrofit2Version = '2.2.0'
+    compile "com.squareup.retrofit2:retrofit:$retrofit2Version"
+    compile "com.squareup.retrofit2:converter-gson:$retrofit2Version"
+
     testCompile 'junit:junit:4.12'
+    compile 'com.jakewharton:kotterknife:0.1.0-SNAPSHOT'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    def coroutines_version = '0.13'
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+    // https://github.com/metalabdesign/AsyncAwait
+    compile 'co.metalab.asyncawait:asyncawait:1.0.0'
+    compile 'ru.gildor.coroutines:kotlin-coroutines-retrofit:0.6.0'
+
+    compile 'com.squareup.okhttp3:logging-interceptor:3.8.1'
+
+    compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
+    compile 'com.android.support:support-v4:25.3.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
+}
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+    maven {
+        url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+    }
 }
