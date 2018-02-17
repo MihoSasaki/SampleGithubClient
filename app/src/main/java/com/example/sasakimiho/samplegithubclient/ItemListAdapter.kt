@@ -8,8 +8,8 @@ import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.RelativeLayout
 import android.widget.TextView
-import butterknife.bindView
 import com.bumptech.glide.Glide
+import kotterknife.bindView
 
 class ItemListAdapter(val items: MutableList<Repository>, val itemClicked: (Repository) -> Unit) : RecyclerView.Adapter<ItemListAdapter.ViewHolder>() {
     override fun onBindViewHolder(holder: ItemListAdapter.ViewHolder, position: Int) {

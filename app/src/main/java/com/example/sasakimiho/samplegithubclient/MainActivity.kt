@@ -12,8 +12,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import butterknife.bindView
 import co.metalab.asyncawait.async
+import kotterknife.bindView
 import retrofit2.Response
 import ru.gildor.coroutines.retrofit.awaitResponse
 
