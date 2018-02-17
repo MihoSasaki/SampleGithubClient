@@ -7,5 +7,5 @@ import retrofit2.http.QueryMap
 interface GithubClient {
 
     @GET("/search/repositories")
-    fun search(@QueryMap options: Map<String, String>): Call<Page<Repository>>
+    fun search(@QueryMap options: Map<String, String>, @QueryMap page: Map<String, Int>): Call<Page<Repository>>
 }

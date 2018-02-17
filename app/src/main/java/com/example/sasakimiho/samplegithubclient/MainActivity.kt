@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v4.view.MenuItemCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.util.Log
@@ -23,13 +24,19 @@ class MainActivity : AppCompatActivity() {
 
     private var searchWord: String = ""
 
-    private val SORT_NONE_INDEX: Int = 3
-    private val ORDER_NONE_INDEX: Int = 2
+    val stringSortTitles: Array<String> = SortQuery.getAllQueries()
+    val stringOrderTitles: Array<String> = OrderQuery.getAllQueries()
+    private val SORT_NONE_INDEX: Int = SortQuery.NONE.ordinal //stringSortTitles.indexOf(SortQuery.NONE.query)
+    private val ORDER_NONE_INDEX: Int = stringOrderTitles.indexOf(OrderQuery.NONE.query)
+
+
     private var sortSelectedId: Int = SORT_NONE_INDEX
     private var orderSelectedId: Int = ORDER_NONE_INDEX
 
     private var sortQuerySelected: SortQuery = SortQuery.NONE
     private var orderQuerySelected: OrderQuery = OrderQuery.NONE
+
+    private var currentPage: Int = 1
 
     val itemList: MutableList <Repository> = mutableListOf<Repository>()
     val adapter = ItemListAdapter(items = itemList) { repo ->
@@ -40,6 +47,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        recyclerView.addOnScrollListener(object : EndlessScrollListener(recyclerView.layoutManager as LinearLayoutManager) {
+            override fun onLoadMore(current_page: Int) {
+                currentPage = current_page
+                asyncSearchExecute(searchWord, current_page, true)
+            }
+        })
         recyclerView.adapter = adapter
     }
 
@@ -66,9 +79,10 @@ class MainActivity : AppCompatActivity() {
                 searchWord = newText as String
                 //TODO:future work
                 //textの結果をfragmentに送る
-                async {
-                    newText?.let { searchRepository(query = newText) }
-                }
+                asyncSearchExecute(newText, currentPage, false)
+//                async {
+//                    newText?.let { searchRepository(query = newText, ) }
+//                }
                 return true
             }
         })
@@ -100,22 +114,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sortItemClicked() {
-        val stringTitles: Array<String> = SortQuery.getAllQueries()
         var currentSelectedId: Int = sortSelectedId
         AlertDialog.Builder(this)
                 .setTitle("select sort item")
-                .setSingleChoiceItems(stringTitles, sortSelectedId, object : DialogInterface.OnClickListener {
+                .setSingleChoiceItems(stringSortTitles, sortSelectedId, object : DialogInterface.OnClickListener {
                     override fun onClick(p0: DialogInterface?, p1: Int) {
                         currentSelectedId = p1
                     }
                 })
                 .setPositiveButton("Select", object : DialogInterface.OnClickListener {
                     override fun onClick(p0: DialogInterface?, p1: Int) {
-                        changeSortSelectedItem(stringTitles[currentSelectedId])
+                        changeSortSelectedItem(stringSortTitles[currentSelectedId])
                         sortSelectedId = currentSelectedId
-                        async {
-                            searchRepository(searchWord)
-                        }
+                        asyncSearchExecute(searchWord, currentPage, false)
                     }
                 })
                 .setNegativeButton("Cancel", null)
@@ -123,22 +134,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun orderItemClicked() {
-        val stringTitles: Array<String> = OrderQuery.getAllQueries()
         var currentSelectedId: Int = orderSelectedId
         AlertDialog.Builder(this)
                 .setTitle("select order item")
-                .setSingleChoiceItems(stringTitles, orderSelectedId, object : DialogInterface.OnClickListener {
+                .setSingleChoiceItems(stringOrderTitles, orderSelectedId, object : DialogInterface.OnClickListener {
                     override fun onClick(p0: DialogInterface?, p1: Int) {
                         currentSelectedId = p1
                     }
                 })
                 .setPositiveButton("Select", object : DialogInterface.OnClickListener {
                     override fun onClick(p0: DialogInterface?, p1: Int) {
-                        changeOrderSelectedItem(stringTitles[currentSelectedId])
+                        changeOrderSelectedItem(stringOrderTitles[currentSelectedId])
                         orderSelectedId = currentSelectedId
-                        async {
-                            searchRepository(searchWord)
-                        }
+                        asyncSearchExecute(searchWord, currentPage, false)
                     }
                 })
                 .setNegativeButton("Cancel", null)
@@ -162,8 +170,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    suspend fun searchRepository(query: String) {
+    fun asyncSearchExecute(query: String, page: Int, loadNextPage: Boolean) = async {
+        searchRepository(query, page, loadNextPage)
+    }
+
+    suspend fun searchRepository(query: String, page: Int, loadNextPage: Boolean) {
         val queryMap: MutableMap<String, String> = mutableMapOf()
+        val pageMap: MutableMap<String, Int> = mutableMapOf()
         queryMap.put("q", query)
         if (sortQuerySelected != SortQuery.NONE) {
             queryMap.put("sort", sortQuerySelected.query)
@@ -171,18 +184,26 @@ class MainActivity : AppCompatActivity() {
         if (orderQuerySelected != OrderQuery.NONE) {
             queryMap.put("order", orderQuerySelected.query)
         }
+        if (page != 1) {
+            pageMap.put("page", page)
+        }
 
         try {
             val appModule: AppModule = AppModule()
             val githubClient: GithubClient = appModule.providerGithubClient(appModule.provideRetrofit(appModule.providerGson(), appModule.getClient()))
-            val result: Response<Page<Repository>> = githubClient.search(queryMap).awaitResponse()
+            val result: Response<Page<Repository>> = githubClient.search(queryMap, pageMap).awaitResponse()
             if (result.isSuccessful) {
-                //if successful
-                val repository: Repository? = result.body()?.items?.get(0)
-                println(result.body())
-                result.body()?.items?.let {
-                    adapter.refreshRepositories()
-                    adapter.addRepositories(it)
+
+                runOnUiThread {
+                    //if successful
+                    val repository: Repository? = result.body()?.items?.get(0)
+                    println(result.body())
+                    result.body()?.items?.let {
+                        if (loadNextPage == true) {
+                            adapter.refreshRepositories()
+                        }
+                        adapter.addRepositories(it)
+                    }
                 }
             }
         } catch (e: Throwable) {
