@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.example.sasakimiho.samplegithubclient"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -26,10 +26,11 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 //    def appCompatVersion = '25.3.1'
-    def appCompatVersion = '27.0.2'
+    def appCompatVersion = '26.0.2'
     compile "com.android.support:appcompat-v7:$appCompatVersion"
     compile "com.android.support:recyclerview-v7:$appCompatVersion"
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile "com.android.support:support-v4:$appCompatVersion"
 
     def retrofit2Version = '2.2.0'
     compile "com.squareup.retrofit2:retrofit:$retrofit2Version"
@@ -49,11 +50,14 @@ dependencies {
     compile 'com.squareup.okhttp3:logging-interceptor:3.8.1'
 
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
-    compile 'com.android.support:support-v4:25.3.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
 }
 repositories {
     mavenCentral()
+    jcenter()
+    maven {
+        url "https://maven.google.com"
+    }
     maven {
         url 'https://oss.sonatype.org/content/repositories/snapshots/'
     }
